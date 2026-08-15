@@ -6,6 +6,17 @@ from utils.helpers import dataframe_metrics, get_working_dataframe, set_page_con
 
 set_page_config()
 
+st.sidebar.title("DataSense ")
+st.sidebar.markdown("""
+### 👨‍💻 Developer
+
+**Anshul Rajpoot**  
+📘 Scholar No: `2311401168`  
+
+🎓 Electronics & Communication Engineering  
+🏛️ MANIT Bhopal
+""")
+
 
 def _render_home() -> None:
     st.markdown(
