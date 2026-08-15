@@ -6,18 +6,30 @@ import pandas as pd
 def _infer_column_type(series: pd.Series) -> str:
     if pd.api.types.is_numeric_dtype(series):
         return "numeric"
+
     if pd.api.types.is_datetime64_any_dtype(series):
         return "datetime"
 
     non_null = series.dropna().astype(str)
+
     if non_null.empty:
         return "unknown"
 
-    numeric_candidates = pd.to_numeric(non_null, errors="coerce")
+    # Try numeric detection
+    numeric_candidates = pd.to_numeric(
+        non_null,
+        errors="coerce"
+    )
+
     if numeric_candidates.notna().mean() >= 0.8:
         return "numeric"
 
-    parsed_datetime = pd.to_datetime(non_null, errors="coerce", infer_datetime_format=True)
+    # Try datetime detection
+    parsed_datetime = pd.to_datetime(
+        non_null,
+        errors="coerce"
+    )
+
     if parsed_datetime.notna().mean() >= 0.8:
         return "datetime"
 
