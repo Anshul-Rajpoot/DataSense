@@ -4,7 +4,7 @@ from utils.constants import APP_SUBTITLE
 from utils.helpers import dataframe_metrics, get_working_dataframe, set_page_config
 
 
-st.sidebar.title("DataSense ")
+
 st.sidebar.markdown("""
 ### 👨‍💻 Developer
 
