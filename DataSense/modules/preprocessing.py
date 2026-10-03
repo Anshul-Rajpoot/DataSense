@@ -107,7 +107,12 @@ def convert_column_dtype(
             raise ValueError("The column contains decimal values that cannot be converted to integer.")
         cleaned[column] = numeric.astype("Int64")
     elif target_type == "datetime":
-        cleaned[column] = pd.to_datetime(cleaned[column], errors=errors)
+        cleaned[column] = pd.to_datetime(
+            cleaned[column],
+            errors=errors,
+            format="mixed",
+            dayfirst=True,
+        )
     elif target_type == "boolean":
         boolean_values = {
             "true": True,
