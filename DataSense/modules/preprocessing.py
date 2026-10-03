@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
+
 import pandas as pd
 
 from modules.outliers import detect_outliers, iqr_bounds
@@ -43,6 +45,22 @@ def clean_dataframe(df: pd.DataFrame, drop_duplicates: bool = True) -> pd.DataFr
     if drop_duplicates:
         cleaned = cleaned.drop_duplicates()
     return cleaned
+
+
+def drop_columns(df: pd.DataFrame, columns: Iterable[str]) -> pd.DataFrame:
+    """Return a copy of ``df`` without the requested columns."""
+    if df is None:
+        return pd.DataFrame()
+
+    columns_to_drop = list(columns)
+    if not columns_to_drop:
+        return df.copy()
+
+    missing_columns = [column for column in columns_to_drop if column not in df.columns]
+    if missing_columns:
+        raise KeyError(f"Columns not found: {', '.join(map(str, missing_columns))}")
+
+    return df.drop(columns=columns_to_drop).copy()
 
 
 def apply_missing_strategy(df: pd.DataFrame, column: str, strategy: str, constant_value: str | None = None) -> pd.DataFrame:

@@ -42,6 +42,8 @@ It identifies:
 
 The application maintains both the **original dataset** and a separate **working dataset**, allowing cleaning operations without destroying the original upload.
 
+Users can also select and drop one or more columns from the working dataset. Column removal is recorded in the cleaning history and can be undone or reverted with **Reset to original**.
+
 ---
 
 ### 🧹 3. Interactive Data Cleaning

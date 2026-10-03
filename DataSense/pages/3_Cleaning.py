@@ -3,7 +3,7 @@ import streamlit as st
 from modules.datatype import datatype_summary
 from modules.missing_values import missing_value_details, missing_value_summary
 from modules.outliers import detect_outliers, outlier_summary
-from modules.preprocessing import apply_missing_strategy, convert_column_dtype, handle_outliers
+from modules.preprocessing import apply_missing_strategy, convert_column_dtype, drop_columns, handle_outliers
 from utils.helpers import get_working_dataframe, reset_to_original, store_dataframe, undo_last_change
 
 
@@ -82,6 +82,15 @@ if numeric_columns:
     st.dataframe(outlier_summary(df, method=outlier_method), use_container_width=True)
 else:
     st.info("No numeric columns were found for outlier analysis.")
+
+st.subheader("Drop Columns")
+st.caption("Select one or more columns to remove from the working dataset.")
+columns_to_drop = st.multiselect("Columns to drop", df.columns.tolist())
+if st.button("Drop selected columns", disabled=not columns_to_drop):
+    cleaned = drop_columns(df, columns_to_drop)
+    store_dataframe(cleaned)
+    st.success(f"Dropped {len(columns_to_drop)} column(s) from the working dataset.")
+    st.rerun()
 
 st.subheader("Data Type Detection")
 type_summary = datatype_summary(df)
