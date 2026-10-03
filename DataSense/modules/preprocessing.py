@@ -87,15 +87,45 @@ def apply_missing_strategy(df: pd.DataFrame, column: str, strategy: str, constan
     return cleaned
 
 
-def convert_column_dtype(df: pd.DataFrame, column: str, target_type: str) -> pd.DataFrame:
+def convert_column_dtype(
+    df: pd.DataFrame,
+    column: str,
+    target_type: str,
+    errors: str = "coerce",
+) -> pd.DataFrame:
     if df is None or df.empty or column not in df.columns:
         return pd.DataFrame() if df is None else df.copy()
 
     cleaned = df.copy()
-    if target_type == "numeric":
-        cleaned[column] = pd.to_numeric(cleaned[column], errors="coerce")
+    if target_type in {"numeric", "float"}:
+        cleaned[column] = pd.to_numeric(cleaned[column], errors=errors)
+        if target_type == "float":
+            cleaned[column] = cleaned[column].astype(float)
+    elif target_type == "integer":
+        numeric = pd.to_numeric(cleaned[column], errors=errors)
+        if errors == "raise" and (numeric.dropna() % 1 != 0).any():
+            raise ValueError("The column contains decimal values that cannot be converted to integer.")
+        cleaned[column] = numeric.astype("Int64")
     elif target_type == "datetime":
-        cleaned[column] = pd.to_datetime(cleaned[column], errors="coerce")
+        cleaned[column] = pd.to_datetime(cleaned[column], errors=errors)
+    elif target_type == "boolean":
+        boolean_values = {
+            "true": True,
+            "false": False,
+            "yes": True,
+            "no": False,
+            "1": True,
+            "0": False,
+        }
+        normalized = cleaned[column].astype("string").str.strip().str.lower()
+        invalid = normalized.notna() & ~normalized.isin(boolean_values)
+        if errors == "raise" and invalid.any():
+            raise ValueError("The column contains values that are not valid booleans (true/false, yes/no, or 1/0).")
+        cleaned[column] = normalized.map(boolean_values).astype("boolean")
+    elif target_type == "string":
+        cleaned[column] = cleaned[column].astype("string")
+    else:
+        raise ValueError(f"Unsupported target datatype: {target_type}")
     return cleaned
 
 

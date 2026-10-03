@@ -121,6 +121,8 @@ It can identify potential:
 
 It also displays examples of values that could not be converted successfully.
 
+Users can manually change any column to string, integer, float, boolean, or datetime. Invalid values are reported before the manual conversion is applied.
+
 ---
 
 ### ↩️ 6. Undo & Reset

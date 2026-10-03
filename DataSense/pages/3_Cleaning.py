@@ -108,3 +108,21 @@ if convertible:
         store_dataframe(cleaned)
         st.success("Column converted in the working dataset.")
         st.rerun()
+
+st.subheader("Change Datatype Manually")
+st.caption("Choose any column and convert it to the datatype you need.")
+manual_column = st.selectbox("Select a column", df.columns.tolist(), key="manual_dtype_column")
+manual_type = st.selectbox(
+    "Choose the new datatype",
+    ["string", "integer", "float", "boolean", "datetime"],
+    key="manual_dtype",
+)
+if st.button("Apply manual datatype conversion"):
+    try:
+        cleaned = convert_column_dtype(df, manual_column, manual_type, errors="raise")
+    except (TypeError, ValueError) as error:
+        st.error(f"Datatype conversion failed: {error}")
+    else:
+        store_dataframe(cleaned)
+        st.success(f"Column '{manual_column}' converted to {manual_type}.")
+        st.rerun()
