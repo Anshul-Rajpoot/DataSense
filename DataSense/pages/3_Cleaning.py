@@ -26,6 +26,51 @@ if right.button("Reset to original"):
         st.success("Working dataset reset to the original upload.")
         st.rerun()
 
+st.subheader("Drop Columns")
+st.caption("Select one or more columns to remove from the working dataset.")
+columns_to_drop = st.multiselect("Columns to drop", df.columns.tolist())
+if st.button("Drop selected columns", disabled=not columns_to_drop):
+    cleaned = drop_columns(df, columns_to_drop)
+    store_dataframe(cleaned)
+    st.success(f"Dropped {len(columns_to_drop)} column(s) from the working dataset.")
+    st.rerun()
+
+
+st.subheader("Change Datatype Manually")
+st.caption("Choose any column and convert it to the datatype you need.")
+manual_column = st.selectbox("Select a column", df.columns.tolist(), key="manual_dtype_column")
+manual_type = st.selectbox(
+    "Choose the new datatype",
+    ["string", "integer", "float", "boolean", "datetime"],
+    key="manual_dtype",
+)
+if st.button("Apply manual datatype conversion"):
+    try:
+        cleaned = convert_column_dtype(df, manual_column, manual_type, errors="raise")
+    except (TypeError, ValueError) as error:
+        st.error(f"Datatype conversion failed: {error}")
+    else:
+        store_dataframe(cleaned)
+        st.success(f"Column '{manual_column}' converted to {manual_type}.")
+        st.rerun()
+
+st.subheader("Data Type Detection")
+type_summary = datatype_summary(df)
+st.dataframe(type_summary, use_container_width=True)
+
+convertible = type_summary.loc[type_summary["recommendation"] != "—", "column"].tolist()
+if convertible:
+    selected_type_column = st.selectbox("Select a column to convert", convertible)
+    selected_row = type_summary[type_summary["column"] == selected_type_column].iloc[0]
+    target_type = selected_row["detected_dtype"]
+    st.write(f"Current datatype: {selected_row['current_dtype']} · Detected: {target_type}")
+    st.caption(f"Invalid values: {selected_row['invalid_examples']}")
+    if st.button(f"Convert to {target_type}"):
+        cleaned = convert_column_dtype(df, selected_type_column, target_type)
+        store_dataframe(cleaned)
+        st.success("Column converted in the working dataset.")
+        st.rerun()
+
 missing_summary = missing_value_summary(df)
 st.subheader("Missing Value Analysis")
 st.dataframe(missing_summary, use_container_width=True)
@@ -82,47 +127,3 @@ if numeric_columns:
     st.dataframe(outlier_summary(df, method=outlier_method), use_container_width=True)
 else:
     st.info("No numeric columns were found for outlier analysis.")
-
-st.subheader("Drop Columns")
-st.caption("Select one or more columns to remove from the working dataset.")
-columns_to_drop = st.multiselect("Columns to drop", df.columns.tolist())
-if st.button("Drop selected columns", disabled=not columns_to_drop):
-    cleaned = drop_columns(df, columns_to_drop)
-    store_dataframe(cleaned)
-    st.success(f"Dropped {len(columns_to_drop)} column(s) from the working dataset.")
-    st.rerun()
-
-st.subheader("Data Type Detection")
-type_summary = datatype_summary(df)
-st.dataframe(type_summary, use_container_width=True)
-
-convertible = type_summary.loc[type_summary["recommendation"] != "—", "column"].tolist()
-if convertible:
-    selected_type_column = st.selectbox("Select a column to convert", convertible)
-    selected_row = type_summary[type_summary["column"] == selected_type_column].iloc[0]
-    target_type = selected_row["detected_dtype"]
-    st.write(f"Current datatype: {selected_row['current_dtype']} · Detected: {target_type}")
-    st.caption(f"Invalid values: {selected_row['invalid_examples']}")
-    if st.button(f"Convert to {target_type}"):
-        cleaned = convert_column_dtype(df, selected_type_column, target_type)
-        store_dataframe(cleaned)
-        st.success("Column converted in the working dataset.")
-        st.rerun()
-
-st.subheader("Change Datatype Manually")
-st.caption("Choose any column and convert it to the datatype you need.")
-manual_column = st.selectbox("Select a column", df.columns.tolist(), key="manual_dtype_column")
-manual_type = st.selectbox(
-    "Choose the new datatype",
-    ["string", "integer", "float", "boolean", "datetime"],
-    key="manual_dtype",
-)
-if st.button("Apply manual datatype conversion"):
-    try:
-        cleaned = convert_column_dtype(df, manual_column, manual_type, errors="raise")
-    except (TypeError, ValueError) as error:
-        st.error(f"Datatype conversion failed: {error}")
-    else:
-        store_dataframe(cleaned)
-        st.success(f"Column '{manual_column}' converted to {manual_type}.")
-        st.rerun()
